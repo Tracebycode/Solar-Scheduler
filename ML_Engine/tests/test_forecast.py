@@ -5,15 +5,16 @@ Run: pytest tests/ -v
 """
 import pytest
 from src.forecast_solar import forecast_solar
+from src.config import CONFIG
 
 
 class TestForecastShape:
     """Tests for forecast output structure"""
     
-    def test_forecast_returns_24_hours(self, sunny_data):
-        """Verify forecast returns 24 hourly values"""
+    def test_forecast_returns_default_hours(self, sunny_data):
+        """Verify forecast returns CONFIG horizon hours"""
         forecast = forecast_solar(sunny_data)
-        assert len(forecast) == 24
+        assert len(forecast) == CONFIG["horizon_hours"]
     
     def test_forecast_has_datetime_index(self, sunny_data):
         """Verify forecast index is datetime"""
@@ -42,13 +43,13 @@ class TestForecastMethods:
     def test_persistence_method(self, sunny_data):
         """Test persistence baseline works"""
         persist = forecast_solar(sunny_data, method="persistence")
-        assert len(persist) == 24
+        assert len(persist) == CONFIG["horizon_hours"]
         assert persist.sum() > 0
     
     def test_arima_method(self, sunny_data):
         """Test ARIMA forecasting works"""
         arima = forecast_solar(sunny_data, method="arima")
-        assert len(arima) == 24
+        assert len(arima) == CONFIG["horizon_hours"]
     
     def test_ensemble_is_blend(self, sunny_data):
         """Ensemble should be between persistence and ARIMA"""
