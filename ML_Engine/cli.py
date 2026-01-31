@@ -160,12 +160,35 @@ Date Format: DD-MM-YYYY HH:MM (Indian format)
         help='Output format (default: json)'
     )
     
+    # Ingestion args
+    parser.add_argument('--ingest', action='store_true', help='Ingest new data mode')
+    parser.add_argument('--time', type=str, help='Reading time (DD-MM-YYYY HH:MM)')
+    parser.add_argument('--solar', type=float, help='Solar power in kW')
+    parser.add_argument('--load', type=float, help='Load power in kW')
+    
     args = parser.parse_args()
     
     # Determine data file
     data_dir = ML_ENGINE_ROOT / "data"
     csv_file = data_dir / f"solar_data_{args.weather}.csv"
     
+    # Mode A: Ingestion
+    if args.ingest:
+        if not all([args.time, args.solar is not None, args.load is not None]):
+            print("Error: --ingest requires --time, --solar, and --load")
+            sys.exit(1)
+        
+        from src.data_utils import append_new_reading
+        try:
+            append_new_reading(str(csv_file), args.time, args.solar, args.load)
+            result = {"status": "success", "message": f"Data ingested into {csv_file.name}"}
+            print(json.dumps(result) if args.format == 'json' else result['message'])
+            sys.exit(0)
+        except Exception as e:
+            print(f"Ingestion error: {e}")
+            sys.exit(1)
+
+    # Mode B: Forecasting (existing logic)
     if not csv_file.exists():
         error = {
             "status": "error",
