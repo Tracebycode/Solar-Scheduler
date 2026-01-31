@@ -1,9 +1,11 @@
 import express from "express";
+import cors from "cors";
 import routes from "./routes/system.routes";
 import { runSchedulerTick } from "./services/scheduler.service";
-
 const app = express();
 const PORT = 3000;
+
+app.use(cors());
 
 // Middleware
 app.use(express.json());
