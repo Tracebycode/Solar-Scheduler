@@ -1,13 +1,10 @@
 import { systemConfigurationService } from "./systemConfiguration";
 import { Device } from "../core/types";
+import { persistenceService } from "./persistence.service";
 
 const config = systemConfigurationService.getSystemConfig();
 
-/**
- * In-memory state object.
- * Mutate directly: state.batteryRemainingWh = 1000;
- */
-export const state = {
+const defaultState = {
   batteryRemainingWh: config.batteryCapacityWh,
   batteryCapacityWh: config.batteryCapacityWh,
   devices: [
@@ -24,3 +21,19 @@ export const state = {
   windowStart: new Date().toISOString(),
   windowEnd: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
 };
+
+// Load saved state or use default
+const savedState = persistenceService.load();
+
+/**
+ * In-memory state object.
+ * Mutate directly: state.batteryRemainingWh = 1000;
+ */
+export const state = savedState ? { ...defaultState, ...savedState } : defaultState;
+
+/**
+ * Helper to persist current state to disk
+ */
+export function saveState() {
+  persistenceService.save(state);
+}
