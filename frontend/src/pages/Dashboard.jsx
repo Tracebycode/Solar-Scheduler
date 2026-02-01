@@ -1,19 +1,14 @@
 import { useEffect, useState } from "react";
-
 import BatteryBar from "../components/BatteryBar";
 import ForecastCard from "../components/ForecastCard";
 import OverrideToggle from "../components/OverrideToggle";
 import DeviceCard from "../components/DeviceCard";
 import SolarChart from "../components/SolarChart";
 import GanttTimeline from "../components/GanttTimeline";
-import AddDeviceForm from "../components/AddDeviceForm";
 
 import {
   getState,
   toggleDevice,
-  addDevice,
-  deleteDevice,
-  updateDevice,
   setOverride as setOverrideApi,
   get24hForecast
 } from "../services/api";
@@ -98,57 +93,6 @@ export default function Dashboard() {
 
 
   /* ===============================
-     DELETE
-  =============================== */
-
-  const handleDeleteDevice = async (id) => {
-    await deleteDevice(id);
-    setDevices(prev => prev.filter(d => d.id !== id));
-  };
-
-
-  /* ===============================
-     EDIT
-  =============================== */
-
-  const handleEditDevice = async (device) => {
-    const name = prompt("Device name:", device.name);
-    const power = prompt("Power (W):", device.powerW);
-    const type = prompt("Type (CRITICAL/FLEXIBLE/OPTIONAL):", device.type);
-
-    if (!name || !power || !type) return;
-
-    const updated = {
-      ...device,
-      name,
-      powerW: Number(power),
-      type
-    };
-
-    await updateDevice(updated);
-
-    setDevices(prev =>
-      prev.map(d => (d.id === device.id ? updated : d))
-    );
-  };
-
-
-  /* ===============================
-     ADD
-  =============================== */
-
-  const handleAddDevice = async (device) => {
-    try {
-      const res = await addDevice(device);
-      // Use the device from backend response (includes real UUID)
-      setDevices(prev => [...prev, res.data]);
-    } catch (error) {
-      console.error("Failed to add device:", error);
-    }
-  };
-
-
-  /* ===============================
      OVERRIDE TOGGLE
   =============================== */
 
@@ -167,47 +111,48 @@ export default function Dashboard() {
   =============================== */
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-slate-100">Dashboard</h1>
+        <OverrideToggle
+          override={overrideMode}
+          setOverride={handleOverrideToggle}
+        />
+      </div>
 
       {/* TOP */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <BatteryBar percent={battery} />
         <ForecastCard value={forecast} />
       </div>
 
-
       {/* CHART */}
       <SolarChart data={chartData} />
 
-
-      {/* MODE TOGGLE */}
-      <OverrideToggle
-        override={overrideMode}
-        setOverride={handleOverrideToggle}
-      />
-
-
-      {/* ADD DEVICE FORM */}
-      <AddDeviceForm onAdd={handleAddDevice} />
-
-
-      {/* DEVICE LIST */}
-      <div className="grid grid-cols-2 gap-4">
-        {devices.map(d => (
-          <DeviceCard
-            key={d.id}
-            device={d}
-            disabled={!overrideMode}
-            onToggle={toggleDeviceLocal}
-            onDelete={handleDeleteDevice}   // ✅ added
-            onEdit={handleEditDevice}       // ✅ added
-          />
-        ))}
-      </div>
-
-
-      {/* GANTT TIMELINE */}
+      {/* TIMELINE */}
       <GanttTimeline devices={devices} forecast={chartData} />
+
+      {/* DEVICE STATUS (Read Only) */}
+      <div className="pt-4">
+        <h2 className="text-lg font-semibold text-slate-300 mb-4">Device Status</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {devices.map(d => (
+            <DeviceCard
+              key={d.id}
+              device={d}
+              disabled={!overrideMode}
+              onToggle={toggleDeviceLocal}
+            // No delete/edit props = read-only mode
+            />
+          ))}
+          {devices.length === 0 && (
+            <p className="text-slate-500 italic col-span-full">
+              No devices connected.
+            </p>
+          )}
+        </div>
+      </div>
 
     </div>
   );

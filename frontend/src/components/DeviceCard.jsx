@@ -61,39 +61,43 @@ export default function DeviceCard({
         />
 
         {/* Edit */}
-        <button
-          disabled={disabled}
-          onClick={() => onEdit(device)}
-          className="
-            text-blue-400 
-            hover:text-blue-300 
-            disabled:opacity-40 
-            disabled:cursor-not-allowed
-          "
-          title="Edit device"
-        >
-          <Pencil size={18} />
-        </button>
+        {onEdit && (
+          <button
+            disabled={disabled}
+            onClick={() => onEdit(device)}
+            className="
+              text-blue-400 
+              hover:text-blue-300 
+              disabled:opacity-40 
+              disabled:cursor-not-allowed
+            "
+            title="Edit device"
+          >
+            <Pencil size={18} />
+          </button>
+        )}
 
         {/* Delete with confirmation */}
-        <button
-          disabled={disabled}
-          onClick={() => {
-            const ok = window.confirm(
-              `Delete "${device.name}" permanently?`
-            );
-            if (ok) onDelete(device.id);
-          }}
-          className="
-            text-red-400 
-            hover:text-red-300 
-            disabled:opacity-40 
-            disabled:cursor-not-allowed
-          "
-          title="Delete device"
-        >
-          <Trash2 size={18} />
-        </button>
+        {onDelete && (
+          <button
+            disabled={disabled}
+            onClick={() => {
+              const ok = window.confirm(
+                `Delete "${device.name}" permanently?`
+              );
+              if (ok) onDelete(device.id);
+            }}
+            className="
+              text-red-400 
+              hover:text-red-300 
+              disabled:opacity-40 
+              disabled:cursor-not-allowed
+            "
+            title="Delete device"
+          >
+            <Trash2 size={18} />
+          </button>
+        )}
 
       </div>
     </div>
