@@ -3,7 +3,7 @@ import cors from "cors";
 import routes from "./routes/system.routes";
 import { runSchedulerTick } from "./services/scheduler.service";
 const app = express();
-const PORT = 3000;
+const PORT = 5000;
 
 app.use(cors());
 
